@@ -1,7 +1,9 @@
+import CountDown from './components/CountDown';
+
 function App() {
   return (
     <div className="App">
-      Test
+      <CountDown/>
     </div>
   );
 }
