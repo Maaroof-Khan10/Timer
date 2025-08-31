@@ -1,50 +1,89 @@
 import React, {useState, useRef} from "react";
 
 const CountDown = () => {
-    const [timerValue, setTimerValue] = useState(0);
-    const [timer, setTimer] = useState(0);
-    const [startCount, setStartCount] = useState(false)
-    const intervalRef = useRef(null); // Using ref makes the value persistant
+    const [timeLeft, setTimeLeft] = useState(0);
+    const [initialTime, setInitialTime] = useState(0);
+    const [isRunning, setIsRunning] = useState(false);
 
-    const startTimer = () => {
-        if (!startCount) {
-            setStartCount(true);
-            if (timer !== 0 && timerValue === 0) {
-                setTimerValue(timer);
-                console.log(timer, timerValue);
-            }
-            if (intervalRef.current) {
-                clearInterval(intervalRef.current);
-            }
+    const intervalRef = useRef(null);
 
-            intervalRef.current = setInterval(() => {
-                setTimer((prev) => {
-                    if (prev <= 1) {
-                        clearInterval(intervalRef.current);
-                        setStartCount(false)
-                        return 0
-                    }
-                    return prev - 1;
-                })
-            }, 1000)
-        }
+    const start = () => {
+        if (timeLeft <= 0) return;
+
+        setInitialTime(timeLeft);
+        setIsRunning(true);
+
+        if (intervalRef.current) clearInterval(intervalRef.current);
+
+        intervalRef.current = setInterval(() => {
+            setTimeLeft((prev) => {
+                if (prev <= 1) {
+                    clearInterval(intervalRef.current);
+                    setIsRunning(false);
+                    return 0;
+                }
+                return prev - 1;
+            });
+        }, 1000)
     }
 
-    const pauseTimer = () => {
-        setStartCount(false)
-        clearInterval(intervalRef.current);
+    const pause = () => {
+        setIsRunning(false);
+        clearInterval(intervalRef.current)
     }
 
-    const resetTimer = () => {
-        pauseTimer();
-        setTimer(timerValue);
+    const reset = () => {
+        pause();
+        setTimeLeft(initialTime);
     }
+
+    const hours = Math.floor(timeLeft / 3600);
+    const minutes = Math.floor(((timeLeft % 3600) / 60));
+    const seconds = timeLeft % 60;
+
+    const handleUserInput = (setter) => (e) => {
+        if (isRunning) return;
+        const value = Math.max(0, Number(e.target.value) || 0);
+        setter(value);
+    }
+
+    const setHours = (h) =>
+        setTimeLeft(h * 3600 + minutes * 60 + seconds);
+    const setMinutes = (m) =>
+        setTimeLeft(hours * 3600 + m * 60 + seconds);
+    const setSeconds = (s) =>
+        setTimeLeft(hours * 3600 + minutes * 60 + s);
+
     return (
         <div>
-            <input value={timer} onChange={(e) => {setTimer(Number(e.target.value))}}></input>
-            <button onClick={() => {startTimer()}}>Start</button>
-            <button onClick={() => {pauseTimer()}}>Pause</button>
-            <button onClick={() => {resetTimer()}}>Reset</button>
+            <div>
+                <input
+                value={hours}
+                disabled={isRunning}
+                onChange={handleUserInput(setHours)}
+                />
+                <input
+                value={minutes}
+                disabled={isRunning}
+                onChange={handleUserInput(setMinutes)}
+                />
+                <input
+                value={seconds}
+                disabled={isRunning}
+                onChange={handleUserInput(setSeconds)}
+                />
+            </div>
+            <div>
+                <button onClick={start} disabled={isRunning || timeLeft <= 0}>
+                Start
+                </button>
+                <button onClick={pause} disabled={!isRunning}>
+                Pause
+                </button>
+                <button onClick={reset} disabled={timeLeft === initialTime && !isRunning}>
+                Reset
+                </button>
+            </div>
         </div>
     )
 }
