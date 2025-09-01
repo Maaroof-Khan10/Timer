@@ -1,1 +1,19 @@
 @import "tailwindcss";
+
+body {
+  background-color: #dc7532;
+}
+
+@theme {
+  
+}
+
+@layer components {
+  .timeInput {
+    @apply w-10 text-center outline-none text-[#ffe8d1];
+  }
+
+  .buttons {
+    @apply text-center outline-none p-3 shadow-lg bg-amber-50 rounded-3xl;
+  }
+}
